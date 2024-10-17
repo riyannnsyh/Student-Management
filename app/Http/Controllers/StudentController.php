@@ -13,8 +13,8 @@ class StudentController extends Controller
 
     public function index(): View
     {
-        $students = Student::all();
-        return view ('students.index')->with('students', $students);
+        $students = Student::simplePaginate(5);
+    return view('students.index', compact('students'));
     }
 
  
@@ -26,9 +26,15 @@ class StudentController extends Controller
   
     public function store(Request $request): RedirectResponse
     {
-        $input = $request->all();
-        Student::create($input);
-        return redirect('student')->with('flash_message', 'Student Addedd!');
+        $validated = $request->validate([
+            'name' => 'required',
+            'address' => 'required',
+            'mobile' => 'required'
+        ]);
+    
+        Student::create($validated);
+    
+        return redirect('/student')->with('success', 'Data siswa berhasil ditambahkan!');
     }
 
     public function show(string $id): View
@@ -45,16 +51,25 @@ class StudentController extends Controller
 
     public function update(Request $request, string $id): RedirectResponse
     {
+        $validated = $request->validate([
+            'name' => 'required',
+            'address' => 'required',
+            'mobile' => 'required'
+        ]);
+    
         $student = Student::find($id);
-        $input = $request->all();
-        $student->update($input);
-        return redirect('student')->with('flash_message', 'student Updated!');  
+        $student->update($validated);
+    
+        return redirect('/student')->with('success', 'Data siswa berhasil diperbarui!');
     }
 
     
     public function destroy(string $id): RedirectResponse
     {
-        Student::destroy($id);
-        return redirect('student')->with('flash_message', 'Student deleted!'); 
+        $student = Student::find($id);
+        $student->delete();
+
+        return redirect('/student')->with('success', 'Data siswa berhasil dihapus!');
+
     }
 }
